@@ -893,13 +893,167 @@
     text-overflow: ellipsis;
     max-width: 200px;
   }
+
+  /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
+
+  /* Hamburger button — mobile only */
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    flex-direction: column;
+    gap: 5px;
+    margin-right: 12px;
+  }
+  .menu-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  /* Sidebar overlay on mobile */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 99;
+  }
+  .sidebar-overlay.open { display: block; }
+
+  @media (max-width: 768px) {
+    /* Stack layout: header spans full width, sidebar slides in */
+    .app-shell {
+      grid-template-columns: 1fr;
+      grid-template-rows: 56px 1fr;
+    }
+
+    /* Header spans full width, show hamburger */
+    .header {
+      grid-column: 1 / -1;
+      height: 56px;
+      z-index: 100;
+    }
+    .menu-toggle { display: flex; }
+
+    /* Topbar hidden on mobile — stats shown in header */
+    .topbar { display: none; }
+
+    /* Sidebar becomes off-canvas drawer */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      width: 240px;
+      height: 100vh;
+      z-index: 200;
+      transition: left 0.25s ease;
+      grid-row: unset;
+    }
+    .sidebar.open { left: 0; }
+
+    /* Main takes full width */
+    .main {
+      grid-column: 1 / -1;
+      height: calc(100vh - 56px);
+      padding: 20px 16px;
+    }
+
+    /* Topbar stats: show condensed row under header */
+    .mobile-stats {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .mobile-stat {
+      flex: 1;
+      min-width: 80px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      text-align: center;
+    }
+    .mobile-stat-label {
+      font-size: 10px;
+      color: var(--ink-faint);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .mobile-stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .mobile-stat-value.accent { color: var(--danger); }
+    .mobile-stat-value.gold   { color: var(--gold-dark); }
+
+    /* Table: horizontal scroll */
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table { min-width: 600px; }
+
+    /* Result card: 2 cols on mobile */
+    .result-card-body {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Form grids: force single column */
+    .form-grid,
+    .form-grid.cols-3 {
+      grid-template-columns: 1fr;
+    }
+
+    /* Upload zone: smaller padding */
+    .upload-zone { padding: 36px 20px; }
+
+    /* Upload actions: wrap */
+    .upload-actions { flex-wrap: wrap; }
+
+    /* View header: stack */
+    .view-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    /* Modal: full screen on mobile */
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal {
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 16px 16px 0 0;
+    }
+
+    /* Pending table action buttons: stack */
+    .td-actions { flex-wrap: wrap; gap: 4px; }
+    .btn-sm { padding: 5px 8px; font-size: 11px; }
+  }
+
+  @media (max-width: 400px) {
+    .mobile-stats { gap: 6px; }
+    .main { padding: 16px 12px; }
+  }
 </style>
 </head>
 <body>
 
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 <div class="app-shell">
   <!-- HEADER -->
   <header class="header">
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" aria-label="選單">
+      <span></span><span></span><span></span>
+    </button>
     <div class="header-brand">
       <span class="header-title">財務管理後台</span>
       <span class="header-sub">Finance System</span>
@@ -924,7 +1078,7 @@
   </div>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label" style="padding-top:4px">功能選單</div>
       <div class="sidebar-nav-item active" onclick="switchView('upload')" id="nav-upload">
@@ -951,6 +1105,22 @@
 
     <!-- UPLOAD VIEW -->
     <div class="view active" id="view-upload">
+      <!-- Mobile stats bar -->
+      <div class="mobile-stats" id="mobileStats">
+        <div class="mobile-stat">
+          <span class="mobile-stat-label">待確認</span>
+          <span class="mobile-stat-value accent" id="mStatPending">—</span>
+        </div>
+        <div class="mobile-stat">
+          <span class="mobile-stat-label">已確認</span>
+          <span class="mobile-stat-value gold" id="mStatConfirmed">—</span>
+        </div>
+        <div class="mobile-stat">
+          <span class="mobile-stat-label">核銷總額</span>
+          <span class="mobile-stat-value" id="mStatAmount">—</span>
+        </div>
+      </div>
+
       <div class="view-header">
         <div>
           <div class="view-title">上傳發票</div>
@@ -1152,6 +1322,16 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
+// ── SIDEBAR TOGGLE (mobile) ────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
 // ── STATE ──────────────────────────────────────────────
 let currentView = 'upload';
 let selectedFiles = [];
@@ -1169,6 +1349,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── VIEWS ──────────────────────────────────────────────
 function switchView(view) {
+  closeSidebar();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-' + (view === 'list' || view === 'pending' || view === 'confirmed' ? view : view)).classList.add('active');
@@ -1570,6 +1751,13 @@ function loadStats() {
       document.getElementById('sidebarTotal').textContent = s.total;
       document.getElementById('sidebarPending').textContent = s.pending;
       document.getElementById('sidebarConfirmed').textContent = s.confirmed;
+      // Mobile stats bar
+      const mp = document.getElementById('mStatPending');
+      const mc = document.getElementById('mStatConfirmed');
+      const ma = document.getElementById('mStatAmount');
+      if (mp) mp.textContent = s.pending;
+      if (mc) mc.textContent = s.confirmed;
+      if (ma) ma.textContent = 'NT$ ' + formatNum(s.total_amount);
     });
 }
 
