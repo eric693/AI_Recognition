@@ -12,8 +12,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# OpenAI API Key 從環境變數讀取，啟動時驗證
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+if not OPENAI_API_KEY:
+    import warnings
+    warnings.warn('OPENAI_API_KEY 環境變數未設定，AI 辨識功能將無法使用')
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'invoice-secret-key-change-me')
+from datetime import timedelta
+app.permanent_session_lifetime = timedelta(hours=8)
 
 # ── DATABASE URL ───────────────────────────────────────────────────────────────
 # Render provides DATABASE_URL starting with "postgres://" (legacy).
@@ -97,8 +105,8 @@ def encode_image(filepath):
         return base64.b64encode(f.read()).decode('utf-8')
 
 
-def analyze_invoice(filepath, api_key):
-    client = OpenAI(api_key=api_key)
+def analyze_invoice(filepath):
+    client = OpenAI(api_key=OPENAI_API_KEY)
     ext = filepath.rsplit('.', 1)[-1].lower()
 
     media_map = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
@@ -153,13 +161,49 @@ def analyze_invoice(filepath, api_key):
     return content.strip()
 
 
+# ── AUTH ──────────────────────────────────────────────────────────────────────
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+
+from functools import wraps
+from flask import session, redirect, url_for
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
+
+
 # ── ROUTES ─────────────────────────────────────────────────────────────────────
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        if password == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            session.permanent = True
+            return redirect(url_for('index'))
+        error = '密碼錯誤，請再試一次'
+    return render_template('login.html', error=error)
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
 
 @app.route('/health')
+@login_required
 def health():
     try:
         db.session.execute(text('SELECT 1'))
@@ -170,10 +214,10 @@ def health():
 
 
 @app.route('/upload', methods=['POST'])
+@login_required
 def upload():
-    api_key = request.form.get('api_key', '').strip()
-    if not api_key:
-        return jsonify({'success': False, 'error': '請輸入 OpenAI API Key'}), 400
+    if not OPENAI_API_KEY:
+        return jsonify({'success': False, 'error': '伺服器未設定 OPENAI_API_KEY，請聯絡管理員'}), 500
 
     files = request.files.getlist('files')
     if not files or all(f.filename == '' for f in files):
@@ -193,7 +237,7 @@ def upload():
         file.save(filepath)
 
         try:
-            raw = analyze_invoice(filepath, api_key)
+            raw = analyze_invoice(filepath)
             data = json.loads(raw)
 
             invoice = Invoice(
@@ -225,6 +269,7 @@ def upload():
 
 
 @app.route('/invoices')
+@login_required
 def get_invoices():
     page     = request.args.get('page',     1,  type=int)
     per_page = request.args.get('per_page', 20, type=int)
@@ -253,12 +298,14 @@ def get_invoices():
 
 
 @app.route('/invoice/<int:invoice_id>', methods=['GET'])
+@login_required
 def get_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     return jsonify(invoice.to_dict())
 
 
 @app.route('/invoice/<int:invoice_id>', methods=['PUT'])
+@login_required
 def update_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     data = request.get_json(force=True)
@@ -280,6 +327,7 @@ def update_invoice(invoice_id):
 
 
 @app.route('/invoice/<int:invoice_id>', methods=['DELETE'])
+@login_required
 def delete_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     if invoice.image_filename:
@@ -292,6 +340,7 @@ def delete_invoice(invoice_id):
 
 
 @app.route('/stats')
+@login_required
 def get_stats():
     total     = Invoice.query.count()
     pending   = Invoice.query.filter_by(status='pending').count()
@@ -311,6 +360,7 @@ def get_stats():
 
 
 @app.route('/uploads/<path:filename>')
+@login_required
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 

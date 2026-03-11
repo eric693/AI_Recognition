@@ -228,6 +228,25 @@
   .badge.gold    { background: var(--gold); color: var(--navy-dark); }
   .badge.success { background: var(--success); }
 
+  .btn-logout {
+    font-size: 12px;
+    font-family: 'Noto Sans TC', sans-serif;
+    color: var(--ink-faint);
+    text-decoration: none;
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    transition: all 0.15s;
+    background: var(--surface);
+    white-space: nowrap;
+  }
+
+  .btn-logout:hover {
+    color: var(--ink);
+    border-color: var(--navy);
+    background: var(--bg);
+  }
+
   /* MAIN CONTENT */
   .main {
     padding: 32px 36px;
@@ -901,6 +920,7 @@
       <span class="stat-chip-label">已核銷總額</span>
       <span class="stat-chip-value" id="statAmount">—</span>
     </div>
+    <a href="/logout" class="btn-logout">登出</a>
   </div>
 
   <!-- SIDEBAR -->

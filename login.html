@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登入 — 財務管理後台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:      #1a2540;
+    --navy-dark: #141d30;
+    --navy-light:#243052;
+    --gold:      #c9a84c;
+    --gold-dark: #a8893a;
+    --gold-muted:rgba(201,168,76,0.15);
+    --bg:        #f0f2f5;
+    --surface:   #ffffff;
+    --border:    #e4e7ec;
+    --border-strong: #cdd2db;
+    --ink:       #1a2540;
+    --ink-light: #4a5568;
+    --ink-faint: #94a3b8;
+    --danger:    #c0392b;
+    --danger-bg: #fdecea;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* Split layout */
+  .login-shell {
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    min-height: 540px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(26,37,64,0.18), 0 2px 8px rgba(26,37,64,0.1);
+  }
+
+  /* Left navy panel */
+  .login-panel {
+    width: 340px;
+    flex-shrink: 0;
+    background: var(--navy);
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-panel::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.06);
+  }
+
+  .login-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+
+  .panel-brand {
+    position: relative;
+    z-index: 1;
+  }
+
+  .panel-brand-line {
+    width: 36px;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  .panel-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+
+  .panel-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.42);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .panel-footer {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+  }
+
+  /* Right form area */
+  .login-form-area {
+    flex: 1;
+    background: var(--surface);
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .form-heading {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .form-subheading {
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-bottom: 36px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 11px 42px 11px 14px;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .form-input:focus {
+    border-color: var(--gold);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+  }
+
+  .toggle-pw {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 12px;
+    font-family: 'Noto Sans TC', sans-serif;
+    padding: 2px 4px;
+    transition: color 0.15s;
+  }
+
+  .toggle-pw:hover { color: var(--ink-light); }
+
+  .error-msg {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid rgba(192,57,43,0.2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .error-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--danger);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .btn-login {
+    width: 100%;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 8px;
+    letter-spacing: 0.03em;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-login::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s;
+  }
+
+  .btn-login:hover {
+    background: var(--navy-light);
+  }
+
+  .btn-login:hover::after {
+    transform: scaleX(1);
+  }
+
+  .btn-login:active {
+    transform: scale(0.99);
+  }
+
+  .btn-login:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .login-panel { display: none; }
+    .login-form-area { padding: 40px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-shell">
+  <!-- Left panel -->
+  <div class="login-panel">
+    <div class="panel-brand">
+      <div class="panel-brand-line"></div>
+      <div class="panel-title">財務管理後台</div>
+      <div class="panel-sub">Finance System</div>
+    </div>
+    <div class="panel-footer">僅授權人員可存取</div>
+  </div>
+
+  <!-- Right form -->
+  <div class="login-form-area">
+    <div class="form-heading">管理員登入</div>
+    <div class="form-subheading">請輸入密碼以繼續</div>
+
+    {% if error %}
+    <div class="error-msg">
+      <span class="error-dot"></span>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+      <div class="form-group">
+        <label class="form-label" for="password">登入密碼</label>
+        <div class="input-wrap">
+          <input
+            type="password"
+            class="form-input"
+            id="password"
+            name="password"
+            placeholder="輸入密碼"
+            autocomplete="current-password"
+            autofocus
+          >
+          <button type="button" class="toggle-pw" onclick="togglePw()">顯示</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-login" id="loginBtn" onclick="handleLogin()">
+        登入
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+function togglePw() {
+  const input = document.getElementById('password');
+  const btn = input.nextElementSibling;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '隱藏';
+  } else {
+    input.type = 'password';
+    btn.textContent = '顯示';
+  }
+}
+
+function handleLogin() {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = '驗證中...';
+}
+
+// Re-enable btn if page stays (wrong password)
+window.addEventListener('pageshow', () => {
+  const btn = document.getElementById('loginBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = '登入';
+  }
+});
+</script>
+</body>
+</html>
