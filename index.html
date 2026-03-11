@@ -1629,6 +1629,12 @@ function showToast(msg, type = 'info') {
 document.getElementById('editModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal('editModal');
 });
+
+// ── KEEP-ALIVE ─────────────────────────────────────────
+// Ping /health every 10 minutes to prevent Render free tier sleep (15 min timeout)
+setInterval(() => {
+  fetch('/health').catch(() => {});
+}, 10 * 60 * 1000);
 </script>
 </body>
 </html>
