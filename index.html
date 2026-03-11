@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 智慧報帳系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-light: #4a4a4a;
+    --ink-faint: #8a8a8a;
+    --paper: #fafaf8;
+    --paper-warm: #f4f3ef;
+    --line: #e2e1db;
+    --line-strong: #c8c7c0;
+    --accent: #c8391a;
+    --accent-dark: #a02e14;
+    --accent-light: #f5e6e3;
+    --teal: #1a6b6b;
+    --teal-light: #e3f0f0;
+    --gold: #b5870a;
+    --gold-light: #faf3e0;
+    --success: #2a7a3b;
+    --success-light: #e8f5ec;
+    --radius: 4px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.05);
+    --shadow-lg: 0 2px 8px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* LAYOUT */
+  .app-shell {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    grid-column: 1 / -1;
+    background: var(--ink);
+    color: white;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--accent);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    color: white;
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .stat-chip {
+    text-align: right;
+  }
+
+  .stat-chip-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .stat-chip-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: white;
+    font-weight: 500;
+  }
+
+  .stat-chip-value.accent { color: var(--accent); }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--paper-warm);
+    border-right: 1px solid var(--line);
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 0 0 20px 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+
+  .sidebar-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .sidebar-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0 20px 8px;
+    font-weight: 500;
+  }
+
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13.5px;
+    color: var(--ink-light);
+    border-left: 3px solid transparent;
+  }
+
+  .sidebar-nav-item:hover {
+    background: var(--line);
+    color: var(--ink);
+  }
+
+  .sidebar-nav-item.active {
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--accent);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .badge.teal { background: var(--teal); }
+  .badge.gold { background: var(--gold); }
+
+  /* API KEY SECTION */
+  .api-section {
+    padding: 16px 20px;
+  }
+
+  .api-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .api-input-wrap {
+    position: relative;
+  }
+
+  .api-input {
+    width: 100%;
+    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 7px 36px 7px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .api-input:focus { border-color: var(--teal); }
+
+  .api-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 11px;
+    padding: 2px;
+  }
+
+  .api-status {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+
+  .api-status.ok { color: var(--success); }
+  .api-status.err { color: var(--accent); }
+
+  /* MAIN CONTENT */
+  .main {
+    padding: 32px 40px;
+    overflow-y: auto;
+    height: calc(100vh - 56px);
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .view-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .view-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--ink);
+  }
+
+  .view-subtitle {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+
+  /* UPLOAD AREA */
+  .upload-zone {
+    border: 2px dashed var(--line-strong);
+    border-radius: 6px;
+    padding: 48px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    margin-bottom: 24px;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--teal);
+    background: var(--teal-light);
+  }
+
+  .upload-zone-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .upload-zone-sub {
+    color: var(--ink-faint);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .upload-zone-formats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    background: var(--paper-warm);
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  input[type="file"] { display: none; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 500;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #333; }
+
+  .btn-accent {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-accent:hover { background: var(--accent-dark); }
+
+  .btn-teal {
+    background: var(--teal);
+    color: white;
+  }
+
+  .btn-teal:hover { background: #155a5a; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--ink-light);
+    border: 1px solid var(--line-strong);
+  }
+
+  .btn-outline:hover {
+    background: var(--paper-warm);
+    color: var(--ink);
+  }
+
+  .btn-sm {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* UPLOAD QUEUE */
+  .upload-queue {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .queue-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+  }
+
+  .queue-item-name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .queue-item-size {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  .queue-item-status {
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .queue-item-status.processing { color: var(--gold); }
+  .queue-item-status.success { color: var(--success); }
+  .queue-item-status.error { color: var(--accent); }
+
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--teal);
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 2px;
+  }
+
+  .progress-bar.complete { background: var(--success); }
+  .progress-bar.error { background: var(--accent); }
+
+  /* UPLOAD ACTIONS */
+  .upload-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .upload-count {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-left: auto;
+  }
+
+  /* TABLE */
+  .table-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+    outline: none;
+    color: var(--ink);
+    transition: border-color 0.15s;
+  }
+
+  .search-input:focus { border-color: var(--teal); }
+
+  .filter-select {
+    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .table-wrap {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    background: var(--ink);
+    color: white;
+  }
+
+  th {
+    padding: 11px 14px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--line);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--paper-warm); }
+
+  td {
+    padding: 11px 14px;
+    font-size: 13px;
+    color: var(--ink);
+    vertical-align: middle;
+  }
+
+  td.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  td.amount {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+
+  .status-badge.pending { background: var(--gold-light); color: var(--gold); }
+  .status-badge.confirmed { background: var(--success-light); color: var(--success); }
+  .status-badge.rejected { background: var(--accent-light); color: var(--accent-dark); }
+
+  .td-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    justify-content: center;
+  }
+
+  .page-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    background: white;
+    color: var(--ink);
+    transition: all 0.15s;
+  }
+
+  .page-btn:hover { background: var(--paper-warm); }
+  .page-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .page-info {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin: 0 8px;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modal-in 0.2s ease;
+  }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 0;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 16px;
+    position: sticky;
+    top: 0;
+    background: white;
+  }
+
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 20px;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .modal-close:hover { color: var(--ink); }
+
+  .modal-body { padding: 24px; }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    background: var(--paper-warm);
+    position: sticky;
+    bottom: 0;
+  }
+
+  /* FORM */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-grid.cols-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+
+  .form-control {
+    background: var(--paper-warm);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: 'Noto Sans TC', sans-serif;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+
+  .form-control:focus {
+    border-color: var(--teal);
+    background: white;
+  }
+
+  input[type="number"].form-control {
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  select.form-control {
+    cursor: pointer;
+  }
+
+  /* PREVIEW IMAGE */
+  .preview-thumb {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper-warm);
+    margin-bottom: 16px;
+  }
+
+  .preview-label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 16px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-faint);
+  }
+
+  .empty-state-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--ink-light);
+    margin-bottom: 8px;
+  }
+
+  .empty-state-sub {
+    font-size: 13px;
+  }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+  }
+
+  .toast {
+    background: var(--ink);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    box-shadow: var(--shadow-lg);
+    animation: toast-in 0.2s ease;
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.success { border-left: 4px solid var(--success); }
+  .toast.error { border-left: 4px solid var(--accent); }
+  .toast.info { border-left: 4px solid var(--teal); }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* RESULT CARDS in upload view */
+  .result-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .result-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .result-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--paper-warm);
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .result-card-body {
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .result-field-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 2px;
+  }
+
+  .result-field-value {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* LOADING SPINNER */
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .spinner.dark {
+    border: 2px solid var(--line);
+    border-top-color: var(--teal);
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--line);
+    margin: 20px 0;
+  }
+
+  /* TRUNCATE */
+  .truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-brand">
+      <span class="header-title">報帳系統</span>
+      <span class="header-sub">AI Invoice Manager</span>
+    </div>
+    <div class="header-stats" id="headerStats">
+      <div class="stat-chip">
+        <div class="stat-chip-label">待確認</div>
+        <div class="stat-chip-value accent" id="statPending">—</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-label">已確認</div>
+        <div class="stat-chip-value" id="statConfirmed">—</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-label">已核銷總額</div>
+        <div class="stat-chip-value" id="statAmount">—</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">功能選單</div>
+      <div class="sidebar-nav-item active" onclick="switchView('upload')" id="nav-upload">
+        上傳發票
+      </div>
+      <div class="sidebar-nav-item" onclick="switchView('list')" id="nav-list">
+        <span>發票列表</span>
+        <span class="badge" id="sidebarTotal">0</span>
+      </div>
+      <div class="sidebar-nav-item" onclick="switchView('pending')" id="nav-pending">
+        <span>待確認</span>
+        <span class="badge gold" id="sidebarPending">0</span>
+      </div>
+      <div class="sidebar-nav-item" onclick="switchView('confirmed')" id="nav-confirmed">
+        <span>已確認</span>
+        <span class="badge teal" id="sidebarConfirmed">0</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="api-section">
+        <div class="api-label">OpenAI API Key</div>
+        <div class="api-input-wrap">
+          <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-..." oninput="saveApiKey()">
+          <button class="api-toggle" onclick="toggleApiKeyVisibility()">顯示</button>
+        </div>
+        <div class="api-status" id="apiStatus">請輸入 API Key 以啟用 AI 辨識</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- UPLOAD VIEW -->
+    <div class="view active" id="view-upload">
+      <div class="view-header">
+        <div>
+          <div class="view-title">上傳發票</div>
+          <div class="view-subtitle">支援單張或批次上傳，AI 自動辨識發票資訊</div>
+        </div>
+      </div>
+
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-zone-title">拖曳檔案至此或點擊選擇</div>
+        <div class="upload-zone-sub">支援批次上傳多張發票，AI 將逐一辨識</div>
+        <span class="upload-zone-formats">JPG / PNG / WEBP / GIF / PDF</span>
+        <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" onchange="handleFileSelect(event)">
+      </div>
+
+      <div class="upload-queue" id="uploadQueue"></div>
+
+      <div class="upload-actions" id="uploadActions" style="display:none">
+        <button class="btn btn-teal" onclick="startUpload()" id="uploadBtn">
+          開始辨識
+        </button>
+        <button class="btn btn-outline" onclick="clearQueue()">清除佇列</button>
+        <span class="upload-count" id="uploadCount"></span>
+      </div>
+
+      <div class="result-cards" id="resultCards"></div>
+    </div>
+
+    <!-- LIST VIEW (shared for all / pending / confirmed) -->
+    <div class="view" id="view-list">
+      <div class="view-header">
+        <div>
+          <div class="view-title" id="listViewTitle">發票列表</div>
+          <div class="view-subtitle" id="listViewSubtitle">所有已辨識的發票記錄</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadInvoices()">重新整理</button>
+      </div>
+
+      <div class="table-toolbar">
+        <input type="text" class="search-input" placeholder="搜尋發票號碼、廠商、品名..." id="searchInput" oninput="debounceSearch()">
+        <button class="btn btn-outline btn-sm" onclick="loadInvoices()">搜尋</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>發票編號</th>
+              <th>日期</th>
+              <th>發票人</th>
+              <th>品名</th>
+              <th style="text-align:right">銷售額</th>
+              <th style="text-align:right">稅額</th>
+              <th style="text-align:right">總計</th>
+              <th>狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTableBody">
+            <tr><td colspan="9" style="padding:40px;text-align:center;color:var(--ink-faint)">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- PENDING VIEW -->
+    <div class="view" id="view-pending">
+      <div class="view-header">
+        <div>
+          <div class="view-title">待確認發票</div>
+          <div class="view-subtitle">請逐一確認 AI 辨識的發票資訊</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadPendingInvoices()">重新整理</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>發票編號</th>
+              <th>日期</th>
+              <th>發票人</th>
+              <th>品名</th>
+              <th style="text-align:right">總計</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTableBody">
+            <tr><td colspan="6" style="padding:40px;text-align:center;color:var(--ink-faint)">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONFIRMED VIEW -->
+    <div class="view" id="view-confirmed">
+      <div class="view-header">
+        <div>
+          <div class="view-title">已確認發票</div>
+          <div class="view-subtitle">已核實的發票記錄</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadConfirmedInvoices()">重新整理</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>發票編號</th>
+              <th>日期</th>
+              <th>發票人</th>
+              <th>品名</th>
+              <th style="text-align:right">銷售額</th>
+              <th style="text-align:right">稅額</th>
+              <th style="text-align:right">總計</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="confirmedTableBody">
+            <tr><td colspan="8" style="padding:40px;text-align:center;color:var(--ink-faint)">載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">編輯發票資訊</div>
+      <button class="modal-close" onclick="closeModal('editModal')">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <img src="" alt="" id="previewImg" class="preview-thumb" style="display:none">
+      <div id="previewLabel" class="preview-label" style="display:none">AI 辨識來源圖片</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">發票編號</label>
+          <input type="text" class="form-control" id="edit-invoice_number" placeholder="AB12345678">
+        </div>
+        <div class="form-group">
+          <label class="form-label">日期</label>
+          <input type="date" class="form-control" id="edit-invoice_date">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">發票人 / 廠商</label>
+          <input type="text" class="form-control" id="edit-issuer" placeholder="公司名稱">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">品名</label>
+          <input type="text" class="form-control" id="edit-item_name" placeholder="商品或服務名稱">
+        </div>
+      </div>
+      <div class="form-grid cols-3">
+        <div class="form-group">
+          <label class="form-label">銷售額（未稅）</label>
+          <input type="number" class="form-control" id="edit-sales_amount" placeholder="0" step="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">稅額</label>
+          <input type="number" class="form-control" id="edit-tax_amount" placeholder="0" step="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">總計（含稅）</label>
+          <input type="number" class="form-control" id="edit-total_amount" placeholder="0" step="1">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">狀態</label>
+          <select class="form-control" id="edit-status">
+            <option value="pending">待確認</option>
+            <option value="confirmed">已確認</option>
+            <option value="rejected">已駁回</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">備註</label>
+          <input type="text" class="form-control" id="edit-notes">
+        </div>
+      </div>
+      <input type="hidden" id="edit-id">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('editModal')">取消</button>
+      <button class="btn btn-accent" onclick="confirmDelete()" style="margin-right:auto">刪除</button>
+      <button class="btn btn-teal" onclick="saveInvoice()">儲存變更</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+let currentView = 'upload';
+let selectedFiles = [];
+let currentPage = 1;
+let currentStatus = '';
+let searchTimer = null;
+
+// ── INIT ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadSavedApiKey();
+  loadStats();
+  setupDragDrop();
+});
+
+// ── API KEY ────────────────────────────────────────────
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  localStorage.setItem('oai_key', key);
+  const status = document.getElementById('apiStatus');
+  if (key.startsWith('sk-') && key.length > 20) {
+    status.textContent = 'API Key 已設定';
+    status.className = 'api-status ok';
+  } else if (key.length > 0) {
+    status.textContent = '格式可能有誤，請確認';
+    status.className = 'api-status err';
+  } else {
+    status.textContent = '請輸入 API Key 以啟用 AI 辨識';
+    status.className = 'api-status';
+  }
+}
+
+function loadSavedApiKey() {
+  const key = localStorage.getItem('oai_key') || '';
+  document.getElementById('apiKeyInput').value = key;
+  saveApiKey();
+}
+
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('apiKeyInput');
+  const btn = input.nextElementSibling;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '隱藏';
+  } else {
+    input.type = 'password';
+    btn.textContent = '顯示';
+  }
+}
+
+function getApiKey() {
+  return document.getElementById('apiKeyInput').value.trim();
+}
+
+// ── VIEWS ──────────────────────────────────────────────
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-' + (view === 'list' || view === 'pending' || view === 'confirmed' ? view : view)).classList.add('active');
+
+  if (view === 'list' || view === 'pending' || view === 'confirmed') {
+    document.getElementById('view-list').classList.remove('active');
+    document.getElementById('view-pending').classList.remove('active');
+    document.getElementById('view-confirmed').classList.remove('active');
+    document.getElementById('view-upload').classList.remove('active');
+    document.getElementById('view-' + view).classList.add('active');
+    if (view === 'list') {
+      currentStatus = '';
+      document.getElementById('listViewTitle').textContent = '發票列表';
+      document.getElementById('listViewSubtitle').textContent = '所有已辨識的發票記錄';
+      loadInvoices();
+    } else if (view === 'pending') {
+      loadPendingInvoices();
+    } else {
+      loadConfirmedInvoices();
+    }
+  } else {
+    document.getElementById('view-upload').classList.add('active');
+  }
+  currentView = view;
+}
+
+// ── UPLOAD ─────────────────────────────────────────────
+function setupDragDrop() {
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files);
+    addFilesToQueue(files);
+  });
+}
+
+function handleFileSelect(event) {
+  const files = Array.from(event.target.files);
+  addFilesToQueue(files);
+  event.target.value = '';
+}
+
+function addFilesToQueue(files) {
+  const allowed = ['jpg','jpeg','png','gif','webp','pdf'];
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (allowed.includes(ext)) {
+      if (!selectedFiles.find(sf => sf.name === f.name && sf.size === f.size)) {
+        selectedFiles.push(f);
+      }
+    }
+  });
+  renderQueue();
+}
+
+function renderQueue() {
+  const queue = document.getElementById('uploadQueue');
+  const actions = document.getElementById('uploadActions');
+  const count = document.getElementById('uploadCount');
+
+  if (selectedFiles.length === 0) {
+    queue.innerHTML = '';
+    actions.style.display = 'none';
+    return;
+  }
+
+  actions.style.display = 'flex';
+  count.textContent = `共 ${selectedFiles.length} 個檔案`;
+
+  queue.innerHTML = selectedFiles.map((f, i) => `
+    <div class="queue-item" id="queueItem-${i}">
+      <span class="queue-item-name">${f.name}</span>
+      <span class="queue-item-size">${formatBytes(f.size)}</span>
+      <span class="queue-item-status" id="qStatus-${i}">等待中</span>
+      <button class="btn btn-outline btn-sm" onclick="removeFromQueue(${i})" id="qRemove-${i}">移除</button>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="qProgress-${i}"></div></div>
+  `).join('');
+}
+
+function removeFromQueue(index) {
+  selectedFiles.splice(index, 1);
+  renderQueue();
+}
+
+function clearQueue() {
+  selectedFiles = [];
+  document.getElementById('resultCards').innerHTML = '';
+  renderQueue();
+}
+
+async function startUpload() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showToast('請先設定 OpenAI API Key', 'error');
+    return;
+  }
+  if (selectedFiles.length === 0) {
+    showToast('請選擇至少一個檔案', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 辨識中...';
+
+  document.getElementById('resultCards').innerHTML = '';
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    const statusEl = document.getElementById(`qStatus-${i}`);
+    const progressEl = document.getElementById(`qProgress-${i}`);
+    const removeBtn = document.getElementById(`qRemove-${i}`);
+
+    statusEl.textContent = '辨識中...';
+    statusEl.className = 'queue-item-status processing';
+    progressEl.style.width = '40%';
+    if (removeBtn) removeBtn.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('files', file);
+    formData.append('api_key', apiKey);
+
+    try {
+      const res = await fetch('/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      progressEl.style.width = '100%';
+
+      if (data.success && data.results && data.results[0]) {
+        const result = data.results[0];
+        if (result.success) {
+          statusEl.textContent = '辨識成功';
+          statusEl.className = 'queue-item-status success';
+          progressEl.classList.add('complete');
+          renderResultCard(result);
+        } else {
+          statusEl.textContent = '辨識失敗';
+          statusEl.className = 'queue-item-status error';
+          progressEl.classList.add('error');
+          showToast(`${file.name}：${result.error}`, 'error');
+        }
+      } else {
+        statusEl.textContent = '上傳失敗';
+        statusEl.className = 'queue-item-status error';
+        progressEl.classList.add('error');
+      }
+    } catch (err) {
+      statusEl.textContent = '錯誤';
+      statusEl.className = 'queue-item-status error';
+      progressEl.classList.add('error');
+      showToast(`${file.name} 上傳失敗：${err.message}`, 'error');
+    }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '開始辨識';
+  loadStats();
+  showToast('批次辨識完成', 'success');
+}
+
+function renderResultCard(result) {
+  const d = result.data;
+  const container = document.getElementById('resultCards');
+  const card = document.createElement('div');
+  card.className = 'result-card';
+  card.innerHTML = `
+    <div class="result-card-header">
+      <span>${result.filename}</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="status-badge pending">待確認</span>
+        <button class="btn btn-outline btn-sm" onclick="openEditModal(${d.id})">編輯</button>
+      </div>
+    </div>
+    <div class="result-card-body">
+      <div>
+        <div class="result-field-label">發票編號</div>
+        <div class="result-field-value">${d.invoice_number || '—'}</div>
+      </div>
+      <div>
+        <div class="result-field-label">日期</div>
+        <div class="result-field-value">${d.invoice_date || '—'}</div>
+      </div>
+      <div>
+        <div class="result-field-label">發票人</div>
+        <div class="result-field-value">${d.issuer || '—'}</div>
+      </div>
+      <div>
+        <div class="result-field-label">總計</div>
+        <div class="result-field-value" style="font-family:'JetBrains Mono',monospace">${d.total_amount != null ? 'NT$ ' + formatNum(d.total_amount) : '—'}</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(card);
+}
+
+// ── INVOICES LIST ──────────────────────────────────────
+function loadInvoices(page = 1) {
+  currentPage = page;
+  const search = document.getElementById('searchInput')?.value || '';
+  const url = `/invoices?page=${page}&per_page=20&search=${encodeURIComponent(search)}`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      renderInvoiceTable(data.invoices, 'invoiceTableBody', 'full');
+      renderPagination(data.pages, data.current_page, loadInvoices);
+      document.getElementById('sidebarTotal').textContent = data.total;
+    });
+}
+
+function loadPendingInvoices() {
+  fetch('/invoices?status=pending&per_page=100')
+    .then(r => r.json())
+    .then(data => {
+      renderPendingTable(data.invoices);
+      document.getElementById('sidebarPending').textContent = data.total;
+    });
+}
+
+function loadConfirmedInvoices() {
+  fetch('/invoices?status=confirmed&per_page=100')
+    .then(r => r.json())
+    .then(data => {
+      renderConfirmedTable(data.invoices);
+      document.getElementById('sidebarConfirmed').textContent = data.total;
+    });
+}
+
+function renderInvoiceTable(invoices, tbodyId, mode) {
+  const tbody = document.getElementById(tbodyId);
+  if (invoices.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:48px;text-align:center;color:var(--ink-faint)">暫無發票記錄</td></tr>';
+    return;
+  }
+  tbody.innerHTML = invoices.map(inv => `
+    <tr>
+      <td class="mono">${inv.invoice_number || '—'}</td>
+      <td>${inv.invoice_date || '—'}</td>
+      <td class="truncate">${inv.issuer || '—'}</td>
+      <td class="truncate">${inv.item_name || '—'}</td>
+      <td class="amount">${inv.sales_amount != null ? formatNum(inv.sales_amount) : '—'}</td>
+      <td class="amount">${inv.tax_amount != null ? formatNum(inv.tax_amount) : '—'}</td>
+      <td class="amount" style="font-weight:600">${inv.total_amount != null ? formatNum(inv.total_amount) : '—'}</td>
+      <td><span class="status-badge ${inv.status}">${statusLabel(inv.status)}</span></td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-outline btn-sm" onclick="openEditModal(${inv.id})">編輯</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderPendingTable(invoices) {
+  const tbody = document.getElementById('pendingTableBody');
+  if (invoices.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:48px;text-align:center;color:var(--ink-faint)">沒有待確認的發票</td></tr>';
+    return;
+  }
+  tbody.innerHTML = invoices.map(inv => `
+    <tr>
+      <td class="mono">${inv.invoice_number || '—'}</td>
+      <td>${inv.invoice_date || '—'}</td>
+      <td class="truncate">${inv.issuer || '—'}</td>
+      <td class="truncate">${inv.item_name || '—'}</td>
+      <td class="amount" style="font-weight:600">${inv.total_amount != null ? 'NT$ ' + formatNum(inv.total_amount) : '—'}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-teal btn-sm" onclick="quickStatus(${inv.id}, 'confirmed')">確認</button>
+          <button class="btn btn-outline btn-sm" onclick="openEditModal(${inv.id})">編輯</button>
+          <button class="btn btn-accent btn-sm" onclick="quickStatus(${inv.id}, 'rejected')">駁回</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderConfirmedTable(invoices) {
+  const tbody = document.getElementById('confirmedTableBody');
+  if (invoices.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:48px;text-align:center;color:var(--ink-faint)">尚無已確認的發票</td></tr>';
+    return;
+  }
+  tbody.innerHTML = invoices.map(inv => `
+    <tr>
+      <td class="mono">${inv.invoice_number || '—'}</td>
+      <td>${inv.invoice_date || '—'}</td>
+      <td class="truncate">${inv.issuer || '—'}</td>
+      <td class="truncate">${inv.item_name || '—'}</td>
+      <td class="amount">${inv.sales_amount != null ? formatNum(inv.sales_amount) : '—'}</td>
+      <td class="amount">${inv.tax_amount != null ? formatNum(inv.tax_amount) : '—'}</td>
+      <td class="amount" style="font-weight:600">${inv.total_amount != null ? 'NT$ ' + formatNum(inv.total_amount) : '—'}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-outline btn-sm" onclick="openEditModal(${inv.id})">編輯</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function quickStatus(id, status) {
+  await fetch(`/invoice/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({status})
+  });
+  showToast(status === 'confirmed' ? '已確認發票' : '已駁回發票', status === 'confirmed' ? 'success' : 'info');
+  loadPendingInvoices();
+  loadStats();
+}
+
+// ── EDIT MODAL ─────────────────────────────────────────
+function openEditModal(id) {
+  fetch(`/invoice/${id}`)
+    .then(r => r.json())
+    .then(inv => {
+      document.getElementById('edit-id').value = inv.id;
+      document.getElementById('edit-invoice_number').value = inv.invoice_number || '';
+      document.getElementById('edit-invoice_date').value = inv.invoice_date || '';
+      document.getElementById('edit-issuer').value = inv.issuer || '';
+      document.getElementById('edit-item_name').value = inv.item_name || '';
+      document.getElementById('edit-sales_amount').value = inv.sales_amount || '';
+      document.getElementById('edit-tax_amount').value = inv.tax_amount || '';
+      document.getElementById('edit-total_amount').value = inv.total_amount || '';
+      document.getElementById('edit-notes').value = inv.notes || '';
+      document.getElementById('edit-status').value = inv.status;
+
+      const previewImg = document.getElementById('previewImg');
+      const previewLabel = document.getElementById('previewLabel');
+      if (inv.image_filename) {
+        previewImg.src = `/uploads/${inv.image_filename}`;
+        previewImg.style.display = 'block';
+        previewLabel.style.display = 'block';
+        previewImg.onerror = () => { previewImg.style.display = 'none'; previewLabel.style.display = 'none'; };
+      } else {
+        previewImg.style.display = 'none';
+        previewLabel.style.display = 'none';
+      }
+
+      document.getElementById('editModal').classList.add('open');
+    });
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+async function saveInvoice() {
+  const id = document.getElementById('edit-id').value;
+  const payload = {
+    invoice_number: document.getElementById('edit-invoice_number').value,
+    invoice_date: document.getElementById('edit-invoice_date').value,
+    issuer: document.getElementById('edit-issuer').value,
+    item_name: document.getElementById('edit-item_name').value,
+    sales_amount: parseFloat(document.getElementById('edit-sales_amount').value) || null,
+    tax_amount: parseFloat(document.getElementById('edit-tax_amount').value) || null,
+    total_amount: parseFloat(document.getElementById('edit-total_amount').value) || null,
+    notes: document.getElementById('edit-notes').value,
+    status: document.getElementById('edit-status').value,
+  };
+
+  const res = await fetch(`/invoice/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.success) {
+    showToast('發票已儲存', 'success');
+    closeModal('editModal');
+    refreshCurrentView();
+    loadStats();
+  }
+}
+
+async function confirmDelete() {
+  const id = document.getElementById('edit-id').value;
+  if (!confirm('確定要刪除此發票記錄嗎？此操作無法復原。')) return;
+  await fetch(`/invoice/${id}`, { method: 'DELETE' });
+  showToast('已刪除發票', 'info');
+  closeModal('editModal');
+  refreshCurrentView();
+  loadStats();
+}
+
+function refreshCurrentView() {
+  if (currentView === 'list') loadInvoices(currentPage);
+  else if (currentView === 'pending') loadPendingInvoices();
+  else if (currentView === 'confirmed') loadConfirmedInvoices();
+}
+
+// ── STATS ──────────────────────────────────────────────
+function loadStats() {
+  fetch('/stats')
+    .then(r => r.json())
+    .then(s => {
+      document.getElementById('statPending').textContent = s.pending;
+      document.getElementById('statConfirmed').textContent = s.confirmed;
+      document.getElementById('statAmount').textContent = 'NT$ ' + formatNum(s.total_amount);
+      document.getElementById('sidebarTotal').textContent = s.total;
+      document.getElementById('sidebarPending').textContent = s.pending;
+      document.getElementById('sidebarConfirmed').textContent = s.confirmed;
+    });
+}
+
+// ── PAGINATION ─────────────────────────────────────────
+function renderPagination(pages, current, loadFn) {
+  const el = document.getElementById('pagination');
+  if (!el || pages <= 1) { if (el) el.innerHTML = ''; return; }
+  let html = `<button class="page-btn" ${current <= 1 ? 'disabled' : ''} onclick="${loadFn.name}(${current - 1})">&lsaquo;</button>`;
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - current) <= 2) {
+      html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="${loadFn.name}(${i})">${i}</button>`;
+    } else if (Math.abs(i - current) === 3) {
+      html += `<span class="page-info">...</span>`;
+    }
+  }
+  html += `<button class="page-btn" ${current >= pages ? 'disabled' : ''} onclick="${loadFn.name}(${current + 1})">&rsaquo;</button>`;
+  el.innerHTML = html;
+}
+
+// ── SEARCH ─────────────────────────────────────────────
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => loadInvoices(1), 400);
+}
+
+// ── UTILS ──────────────────────────────────────────────
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function formatNum(n) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('zh-TW');
+}
+
+function statusLabel(s) {
+  return { pending: '待確認', confirmed: '已確認', rejected: '已駁回' }[s] || s;
+}
+
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(20px)';
+    toast.style.transition = 'all 0.3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Close modal on overlay click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('editModal');
+});
+</script>
+</body>
+</html>
