@@ -375,6 +375,16 @@
     color: var(--ink);
   }
 
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(192,57,43,0.35);
+  }
+  .btn-danger:hover {
+    background: var(--danger-light);
+    border-color: var(--danger);
+  }
+
   .btn-sm {
     padding: 5px 12px;
     font-size: 12px;
@@ -1619,6 +1629,7 @@ function renderPendingTable(invoices) {
           <button class="btn btn-gold btn-sm" onclick="quickStatus(${inv.id}, 'confirmed')">確認</button>
           <button class="btn btn-outline btn-sm" onclick="openEditModal(${inv.id})">編輯</button>
           <button class="btn btn-accent btn-sm" onclick="quickStatus(${inv.id}, 'rejected')">駁回</button>
+          <button class="btn btn-danger btn-sm" onclick="quickDelete(${inv.id}, 'pending')">刪除</button>
         </div>
       </td>
     </tr>
@@ -1643,6 +1654,7 @@ function renderConfirmedTable(invoices) {
       <td>
         <div class="td-actions">
           <button class="btn btn-outline btn-sm" onclick="openEditModal(${inv.id})">編輯</button>
+          <button class="btn btn-danger btn-sm" onclick="quickDelete(${inv.id}, 'confirmed')">刪除</button>
         </div>
       </td>
     </tr>
@@ -1658,6 +1670,18 @@ async function quickStatus(id, status) {
   showToast(status === 'confirmed' ? '已確認發票' : '已駁回發票', status === 'confirmed' ? 'success' : 'info');
   loadPendingInvoices();
   loadStats();
+}
+
+async function quickDelete(id, fromView) {
+  if (!confirm('確定要刪除此發票記錄嗎？此操作無法復原。')) return;
+  const res = await fetch(`/invoice/${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) {
+    showToast('已刪除發票', 'info');
+    if (fromView === 'pending') loadPendingInvoices();
+    else loadConfirmedInvoices();
+    loadStats();
+  }
 }
 
 // ── EDIT MODAL ─────────────────────────────────────────
