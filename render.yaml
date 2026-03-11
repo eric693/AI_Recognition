@@ -2,14 +2,22 @@ services:
   - type: web
     name: ai-invoice-manager
     env: python
+    region: singapore   # 選最近的 region
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /health
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
-        value: 3.11.0
-    disk:
-      name: uploads
-      mountPath: /opt/render/project/src/uploads
-      sizeGB: 1
+        value: "3.11.0"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: invoice-db
+          property: connectionString
+
+databases:
+  - name: invoice-db
+    databaseName: invoices
+    plan: free

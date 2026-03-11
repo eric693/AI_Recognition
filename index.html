@@ -8,32 +8,52 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1a1a;
-    --ink-light: #4a4a4a;
-    --ink-faint: #8a8a8a;
-    --paper: #fafaf8;
-    --paper-warm: #f4f3ef;
-    --line: #e2e1db;
-    --line-strong: #c8c7c0;
-    --accent: #c8391a;
-    --accent-dark: #a02e14;
-    --accent-light: #f5e6e3;
-    --teal: #1a6b6b;
-    --teal-light: #e3f0f0;
-    --gold: #b5870a;
-    --gold-light: #faf3e0;
-    --success: #2a7a3b;
-    --success-light: #e8f5ec;
-    --radius: 4px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.05);
-    --shadow-lg: 0 2px 8px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.08);
+    /* Deep navy sidebar palette */
+    --navy:        #1a2540;
+    --navy-dark:   #141d30;
+    --navy-light:  #243052;
+    --navy-hover:  #2a3a63;
+    --navy-border: rgba(255,255,255,0.07);
+    --navy-text:   rgba(255,255,255,0.75);
+    --navy-faint:  rgba(255,255,255,0.38);
+
+    /* Gold accent */
+    --gold:        #c9a84c;
+    --gold-dark:   #a8893a;
+    --gold-light:  #fdf6e3;
+    --gold-muted:  rgba(201,168,76,0.15);
+
+    /* Main content palette */
+    --bg:          #f0f2f5;
+    --surface:     #ffffff;
+    --border:      #e4e7ec;
+    --border-strong: #cdd2db;
+
+    /* Text */
+    --ink:         #1a2540;
+    --ink-light:   #4a5568;
+    --ink-faint:   #94a3b8;
+
+    /* Status colours */
+    --success:       #1a7a45;
+    --success-light: #eaf7ef;
+    --warning:       #b07d10;
+    --warning-light: #fef9ec;
+    --danger:        #c0392b;
+    --danger-light:  #fdecea;
+    --info:          #1a5fa8;
+    --info-light:    #eaf2fc;
+
+    --radius: 6px;
+    --shadow:    0 1px 3px rgba(26,37,64,0.07), 0 4px 12px rgba(26,37,64,0.05);
+    --shadow-lg: 0 4px 16px rgba(26,37,64,0.12), 0 12px 40px rgba(26,37,64,0.08);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: 'Noto Sans TC', sans-serif;
-    background: var(--paper);
+    background: var(--bg);
     color: var(--ink);
     min-height: 100vh;
     font-size: 14px;
@@ -43,102 +63,129 @@
   /* LAYOUT */
   .app-shell {
     display: grid;
-    grid-template-columns: 260px 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 64px 1fr;
     min-height: 100vh;
   }
 
-  /* HEADER */
+  /* HEADER — sits inside sidebar column */
   .header {
-    grid-column: 1 / -1;
-    background: var(--ink);
+    grid-column: 1 / 2;
+    background: var(--navy-dark);
     color: white;
-    padding: 0 32px;
-    height: 56px;
+    padding: 0 20px;
+    height: 64px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    border-bottom: 3px solid var(--accent);
+    border-bottom: 1px solid var(--navy-border);
   }
 
   .header-brand {
     display: flex;
-    align-items: baseline;
-    gap: 12px;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .header-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    letter-spacing: 0.02em;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
     color: white;
   }
 
   .header-sub {
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    letter-spacing: 0.08em;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    font-weight: 300;
+    font-weight: 400;
   }
 
-  .header-stats {
+  .header::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    margin-left: 20px;
+  }
+
+  .header {
+    position: relative;
+  }
+
+  /* TOPBAR — right side header */
+  .topbar {
+    grid-column: 2 / 3;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    height: 64px;
     display: flex;
-    gap: 32px;
     align-items: center;
+    justify-content: flex-end;
+    padding: 0 36px;
+    gap: 36px;
   }
 
   .stat-chip {
-    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
   }
 
   .stat-chip-label {
-    font-size: 10px;
-    color: rgba(255,255,255,0.4);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--ink-faint);
+    white-space: nowrap;
   }
 
   .stat-chip-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
-    color: white;
-    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 600;
   }
 
-  .stat-chip-value.accent { color: var(--accent); }
+  .stat-chip-value.accent { color: var(--danger); }
+  .stat-chip-value.gold   { color: var(--gold-dark); }
 
   /* SIDEBAR */
   .sidebar {
-    background: var(--paper-warm);
-    border-right: 1px solid var(--line);
-    padding: 28px 0;
+    background: var(--navy);
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0;
     position: sticky;
     top: 0;
-    height: calc(100vh - 56px);
+    height: calc(100vh - 64px);
     overflow-y: auto;
+    grid-row: 2 / 3;
   }
 
   .sidebar-section {
-    padding: 0 0 20px 0;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 20px;
+    padding: 20px 0 8px;
+    border-bottom: 1px solid var(--navy-border);
+    margin-bottom: 4px;
   }
 
   .sidebar-section:last-child {
     border-bottom: none;
-    margin-bottom: 0;
   }
 
   .sidebar-label {
     font-size: 10px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink-faint);
-    padding: 0 20px 8px;
+    color: var(--navy-faint);
+    padding: 0 18px 8px;
     font-weight: 500;
   }
 
@@ -146,100 +193,47 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 9px 20px;
+    padding: 10px 18px;
     cursor: pointer;
     transition: all 0.15s;
-    font-size: 13.5px;
-    color: var(--ink-light);
+    font-size: 13px;
+    color: var(--navy-text);
     border-left: 3px solid transparent;
+    margin: 1px 0;
   }
 
   .sidebar-nav-item:hover {
-    background: var(--line);
-    color: var(--ink);
+    background: var(--navy-hover);
+    color: white;
   }
 
   .sidebar-nav-item.active {
-    background: var(--accent-light);
-    color: var(--accent-dark);
-    border-left-color: var(--accent);
+    background: var(--navy-hover);
+    color: white;
+    border-left-color: var(--gold);
     font-weight: 500;
   }
 
   .badge {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    background: var(--accent);
+    background: rgba(255,255,255,0.15);
     color: white;
-    padding: 1px 6px;
+    padding: 2px 7px;
     border-radius: 10px;
-    min-width: 20px;
+    min-width: 22px;
     text-align: center;
   }
 
-  .badge.teal { background: var(--teal); }
-  .badge.gold { background: var(--gold); }
-
-  /* API KEY SECTION */
-  .api-section {
-    padding: 16px 20px;
-  }
-
-  .api-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  .api-input-wrap {
-    position: relative;
-  }
-
-  .api-input {
-    width: 100%;
-    background: white;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    padding: 7px 36px 7px 10px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.15s;
-  }
-
-  .api-input:focus { border-color: var(--teal); }
-
-  .api-toggle {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--ink-faint);
-    font-size: 11px;
-    padding: 2px;
-  }
-
-  .api-status {
-    margin-top: 6px;
-    font-size: 11px;
-    color: var(--ink-faint);
-  }
-
-  .api-status.ok { color: var(--success); }
-  .api-status.err { color: var(--accent); }
+  .badge.gold    { background: var(--gold); color: var(--navy-dark); }
+  .badge.success { background: var(--success); }
 
   /* MAIN CONTENT */
   .main {
-    padding: 32px 40px;
+    padding: 32px 36px;
     overflow-y: auto;
-    height: calc(100vh - 56px);
+    height: calc(100vh - 64px);
+    background: var(--bg);
   }
 
   .view { display: none; }
@@ -247,63 +241,65 @@
 
   .view-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--border);
   }
 
   .view-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 26px;
+    font-size: 20px;
+    font-weight: 700;
     color: var(--ink);
+    letter-spacing: -0.01em;
   }
 
   .view-subtitle {
     font-size: 12px;
     color: var(--ink-faint);
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   /* UPLOAD AREA */
   .upload-zone {
-    border: 2px dashed var(--line-strong);
-    border-radius: 6px;
-    padding: 48px 32px;
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 56px 32px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
-    background: white;
-    margin-bottom: 24px;
+    background: var(--surface);
+    margin-bottom: 20px;
   }
 
   .upload-zone:hover, .upload-zone.drag-over {
-    border-color: var(--teal);
-    background: var(--teal-light);
+    border-color: var(--gold);
+    background: var(--gold-muted);
   }
 
   .upload-zone-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--ink);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .upload-zone-sub {
     color: var(--ink-faint);
     font-size: 13px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .upload-zone-formats {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: var(--ink-faint);
-    background: var(--paper-warm);
+    background: var(--bg);
     display: inline-block;
-    padding: 4px 12px;
+    padding: 4px 14px;
     border-radius: 20px;
+    border: 1px solid var(--border);
   }
 
   input[type="file"] { display: none; }
@@ -325,34 +321,38 @@
   }
 
   .btn-primary {
-    background: var(--ink);
+    background: var(--navy);
     color: white;
   }
-
-  .btn-primary:hover { background: #333; }
+  .btn-primary:hover { background: var(--navy-light); }
 
   .btn-accent {
-    background: var(--accent);
+    background: var(--danger);
     color: white;
   }
-
-  .btn-accent:hover { background: var(--accent-dark); }
+  .btn-accent:hover { background: #a02e22; }
 
   .btn-teal {
-    background: var(--teal);
+    background: var(--navy);
     color: white;
+    border: 1px solid var(--navy-light);
   }
+  .btn-teal:hover { background: var(--navy-light); }
 
-  .btn-teal:hover { background: #155a5a; }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--navy-dark);
+    font-weight: 600;
+  }
+  .btn-gold:hover { background: var(--gold-dark); }
 
   .btn-outline {
-    background: transparent;
+    background: var(--surface);
     color: var(--ink-light);
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--border-strong);
   }
-
   .btn-outline:hover {
-    background: var(--paper-warm);
+    background: var(--bg);
     color: var(--ink);
   }
 
@@ -378,8 +378,8 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: white;
-    border: 1px solid var(--line);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 10px 14px;
   }
@@ -406,13 +406,13 @@
     white-space: nowrap;
   }
 
-  .queue-item-status.processing { color: var(--gold); }
+  .queue-item-status.processing { color: var(--warning); }
   .queue-item-status.success { color: var(--success); }
-  .queue-item-status.error { color: var(--accent); }
+  .queue-item-status.error { color: var(--danger); }
 
   .progress-bar-wrap {
     height: 3px;
-    background: var(--line);
+    background: var(--border);
     border-radius: 2px;
     overflow: hidden;
     margin-top: 6px;
@@ -420,14 +420,14 @@
 
   .progress-bar {
     height: 100%;
-    background: var(--teal);
+    background: var(--gold);
     width: 0%;
     transition: width 0.3s;
     border-radius: 2px;
   }
 
   .progress-bar.complete { background: var(--success); }
-  .progress-bar.error { background: var(--accent); }
+  .progress-bar.error { background: var(--danger); }
 
   /* UPLOAD ACTIONS */
   .upload-actions {
@@ -454,8 +454,8 @@
   .search-input {
     flex: 1;
     min-width: 200px;
-    background: white;
-    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     padding: 7px 12px;
     font-size: 13px;
@@ -465,11 +465,11 @@
     transition: border-color 0.15s;
   }
 
-  .search-input:focus { border-color: var(--teal); }
+  .search-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-muted); }
 
   .filter-select {
-    background: white;
-    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     padding: 7px 12px;
     font-size: 13px;
@@ -480,9 +480,9 @@
   }
 
   .table-wrap {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow);
   }
@@ -493,7 +493,7 @@
   }
 
   thead tr {
-    background: var(--ink);
+    background: var(--navy);
     color: white;
   }
 
@@ -508,12 +508,12 @@
   }
 
   tbody tr {
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--border);
     transition: background 0.1s;
   }
 
   tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--paper-warm); }
+  tbody tr:hover { background: var(--bg); }
 
   td {
     padding: 11px 14px;
@@ -543,9 +543,9 @@
     border-radius: 3px;
   }
 
-  .status-badge.pending { background: var(--gold-light); color: var(--gold); }
+  .status-badge.pending { background: var(--warning-light); color: var(--warning); }
   .status-badge.confirmed { background: var(--success-light); color: var(--success); }
-  .status-badge.rejected { background: var(--accent-light); color: var(--accent-dark); }
+  .status-badge.rejected { background: var(--danger-light); color: var(--danger); }
 
   .td-actions {
     display: flex;
@@ -568,17 +568,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     cursor: pointer;
     font-size: 13px;
-    background: white;
+    background: var(--surface);
     color: var(--ink);
     transition: all 0.15s;
   }
 
-  .page-btn:hover { background: var(--paper-warm); }
-  .page-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+  .page-btn:hover { background: var(--bg); }
+  .page-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
   .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .page-info {
@@ -622,17 +622,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px 0;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 16px;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     background: white;
   }
 
   .modal-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
   }
 
   .modal-close {
@@ -651,11 +651,11 @@
 
   .modal-footer {
     padding: 16px 24px;
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--border);
     display: flex;
     gap: 10px;
     justify-content: flex-end;
-    background: var(--paper-warm);
+    background: var(--bg);
     position: sticky;
     bottom: 0;
   }
@@ -689,21 +689,22 @@
   }
 
   .form-control {
-    background: var(--paper-warm);
-    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius);
     padding: 8px 10px;
     font-size: 13px;
     font-family: 'Noto Sans TC', sans-serif;
     color: var(--ink);
     outline: none;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     width: 100%;
   }
 
   .form-control:focus {
-    border-color: var(--teal);
+    border-color: var(--gold);
     background: white;
+    box-shadow: 0 0 0 3px var(--gold-muted);
   }
 
   input[type="number"].form-control {
@@ -725,9 +726,9 @@
     width: 100%;
     max-height: 200px;
     object-fit: contain;
-    border: 1px solid var(--line);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: var(--paper-warm);
+    background: var(--bg);
     margin-bottom: 16px;
   }
 
@@ -769,7 +770,7 @@
   }
 
   .toast {
-    background: var(--ink);
+    background: var(--navy);
     color: white;
     padding: 12px 18px;
     border-radius: 6px;
@@ -782,9 +783,9 @@
     gap: 10px;
   }
 
-  .toast.success { border-left: 4px solid var(--success); }
-  .toast.error { border-left: 4px solid var(--accent); }
-  .toast.info { border-left: 4px solid var(--teal); }
+  .toast.success { border-left: 4px solid var(--gold); }
+  .toast.error { border-left: 4px solid var(--danger); }
+  .toast.info { border-left: 4px solid var(--gold); }
 
   @keyframes toast-in {
     from { opacity: 0; transform: translateX(20px); }
@@ -800,19 +801,20 @@
   }
 
   .result-card {
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     overflow: hidden;
+    box-shadow: var(--shadow);
   }
 
   .result-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--paper-warm);
-    border-bottom: 1px solid var(--line);
+    padding: 10px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
     font-size: 13px;
     font-weight: 500;
   }
@@ -854,14 +856,14 @@
   }
 
   .spinner.dark {
-    border: 2px solid var(--line);
-    border-top-color: var(--teal);
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
   }
 
   /* DIVIDER */
   .divider {
     height: 1px;
-    background: var(--line);
+    background: var(--border);
     margin: 20px 0;
   }
 
@@ -880,29 +882,31 @@
   <!-- HEADER -->
   <header class="header">
     <div class="header-brand">
-      <span class="header-title">報帳系統</span>
-      <span class="header-sub">AI Invoice Manager</span>
-    </div>
-    <div class="header-stats" id="headerStats">
-      <div class="stat-chip">
-        <div class="stat-chip-label">待確認</div>
-        <div class="stat-chip-value accent" id="statPending">—</div>
-      </div>
-      <div class="stat-chip">
-        <div class="stat-chip-label">已確認</div>
-        <div class="stat-chip-value" id="statConfirmed">—</div>
-      </div>
-      <div class="stat-chip">
-        <div class="stat-chip-label">已核銷總額</div>
-        <div class="stat-chip-value" id="statAmount">—</div>
-      </div>
+      <span class="header-title">財務管理後台</span>
+      <span class="header-sub">Finance System</span>
     </div>
   </header>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="stat-chip">
+      <span class="stat-chip-label">待確認</span>
+      <span class="stat-chip-value accent" id="statPending">—</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-chip-label">已確認</span>
+      <span class="stat-chip-value gold" id="statConfirmed">—</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-chip-label">已核銷總額</span>
+      <span class="stat-chip-value" id="statAmount">—</span>
+    </div>
+  </div>
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-section">
-      <div class="sidebar-label">功能選單</div>
+      <div class="sidebar-label" style="padding-top:4px">功能選單</div>
       <div class="sidebar-nav-item active" onclick="switchView('upload')" id="nav-upload">
         上傳發票
       </div>
@@ -916,19 +920,10 @@
       </div>
       <div class="sidebar-nav-item" onclick="switchView('confirmed')" id="nav-confirmed">
         <span>已確認</span>
-        <span class="badge teal" id="sidebarConfirmed">0</span>
+        <span class="badge success" id="sidebarConfirmed">0</span>
       </div>
     </div>
-    <div class="sidebar-section">
-      <div class="api-section">
-        <div class="api-label">OpenAI API Key</div>
-        <div class="api-input-wrap">
-          <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-..." oninput="saveApiKey()">
-          <button class="api-toggle" onclick="toggleApiKeyVisibility()">顯示</button>
-        </div>
-        <div class="api-status" id="apiStatus">請輸入 API Key 以啟用 AI 辨識</div>
-      </div>
-    </div>
+
   </aside>
 
   <!-- MAIN CONTENT -->
@@ -953,7 +948,7 @@
       <div class="upload-queue" id="uploadQueue"></div>
 
       <div class="upload-actions" id="uploadActions" style="display:none">
-        <button class="btn btn-teal" onclick="startUpload()" id="uploadBtn">
+        <button class="btn btn-gold" onclick="startUpload()" id="uploadBtn">
           開始辨識
         </button>
         <button class="btn btn-outline" onclick="clearQueue()">清除佇列</button>
@@ -1128,7 +1123,7 @@
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('editModal')">取消</button>
       <button class="btn btn-accent" onclick="confirmDelete()" style="margin-right:auto">刪除</button>
-      <button class="btn btn-teal" onclick="saveInvoice()">儲存變更</button>
+      <button class="btn btn-gold" onclick="saveInvoice()">儲存變更</button>
     </div>
   </div>
 </div>
@@ -1146,49 +1141,11 @@ let searchTimer = null;
 
 // ── INIT ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  loadSavedApiKey();
   loadStats();
   setupDragDrop();
 });
 
-// ── API KEY ────────────────────────────────────────────
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  localStorage.setItem('oai_key', key);
-  const status = document.getElementById('apiStatus');
-  if (key.startsWith('sk-') && key.length > 20) {
-    status.textContent = 'API Key 已設定';
-    status.className = 'api-status ok';
-  } else if (key.length > 0) {
-    status.textContent = '格式可能有誤，請確認';
-    status.className = 'api-status err';
-  } else {
-    status.textContent = '請輸入 API Key 以啟用 AI 辨識';
-    status.className = 'api-status';
-  }
-}
-
-function loadSavedApiKey() {
-  const key = localStorage.getItem('oai_key') || '';
-  document.getElementById('apiKeyInput').value = key;
-  saveApiKey();
-}
-
-function toggleApiKeyVisibility() {
-  const input = document.getElementById('apiKeyInput');
-  const btn = input.nextElementSibling;
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = '隱藏';
-  } else {
-    input.type = 'password';
-    btn.textContent = '顯示';
-  }
-}
-
-function getApiKey() {
-  return document.getElementById('apiKeyInput').value.trim();
-}
+// ── API KEY (managed server-side via OPENAI_API_KEY env var) ──────────────────
 
 // ── VIEWS ──────────────────────────────────────────────
 function switchView(view) {
@@ -1287,11 +1244,6 @@ function clearQueue() {
 }
 
 async function startUpload() {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    showToast('請先設定 OpenAI API Key', 'error');
-    return;
-  }
   if (selectedFiles.length === 0) {
     showToast('請選擇至少一個檔案', 'error');
     return;
@@ -1316,7 +1268,6 @@ async function startUpload() {
 
     const formData = new FormData();
     formData.append('files', file);
-    formData.append('api_key', apiKey);
 
     try {
       const res = await fetch('/upload', { method: 'POST', body: formData });
@@ -1464,7 +1415,7 @@ function renderPendingTable(invoices) {
       <td class="amount" style="font-weight:600">${inv.total_amount != null ? 'NT$ ' + formatNum(inv.total_amount) : '—'}</td>
       <td>
         <div class="td-actions">
-          <button class="btn btn-teal btn-sm" onclick="quickStatus(${inv.id}, 'confirmed')">確認</button>
+          <button class="btn btn-gold btn-sm" onclick="quickStatus(${inv.id}, 'confirmed')">確認</button>
           <button class="btn btn-outline btn-sm" onclick="openEditModal(${inv.id})">編輯</button>
           <button class="btn btn-accent btn-sm" onclick="quickStatus(${inv.id}, 'rejected')">駁回</button>
         </div>
