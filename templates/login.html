@@ -322,7 +322,7 @@
           <button type="button" class="toggle-pw" onclick="togglePw()">顯示</button>
         </div>
       </div>
-      <button type="submit" class="btn-login" id="loginBtn" onclick="handleLogin()">
+      <button type="submit" class="btn-login" id="loginBtn">
         登入
       </button>
     </form>
@@ -342,19 +342,11 @@ function togglePw() {
   }
 }
 
-function handleLogin() {
+// Show loading state only after form submits (not on button click)
+document.querySelector('form').addEventListener('submit', function() {
   const btn = document.getElementById('loginBtn');
   btn.disabled = true;
   btn.textContent = '驗證中...';
-}
-
-// Re-enable btn if page stays (wrong password)
-window.addEventListener('pageshow', () => {
-  const btn = document.getElementById('loginBtn');
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = '登入';
-  }
 });
 </script>
 </body>
